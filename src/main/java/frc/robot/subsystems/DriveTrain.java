@@ -4,18 +4,19 @@
 
 package frc.robot.subsystems;
 
-import edu.wpi.first.wpilibj.drive.DifferentialDrive;
-import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
-
+import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
-import com.revrobotics.CANSparkLowLevel.MotorType;
 
-import edu.wpi.first.wpilibj.motorcontrol.Victor;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
+import edu.wpi.first.math.kinematics.DifferentialDriveWheelPositions;
+import edu.wpi.first.wpilibj.ADIS16448_IMU;
+import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-
-import java.lang.Math;
 
 public class DriveTrain extends SubsystemBase {
   // private Victor FL = new Victor(4);
@@ -40,11 +41,28 @@ public class DriveTrain extends SubsystemBase {
   private int accelFactor = 0;
   private double accelVal = 0.05;
 
+  private final ADIS16448_IMU m_gyro;
+  DifferentialDriveOdometry m_odometry;
+  private Pose2d m_pose;
   /** Creates a new DriveTrain. */
   public DriveTrain() {
+    m_pose = new Pose2d();
+    m_gyro = new ADIS16448_IMU();
     resetEncoders();
+    m_gyro.calibrate();
+    
+  // Creating my odometry object. Here,
+  // our starting pose is 5 meters along the long end of the field and in the
+  // center of the field along the short end, facing forward.
+  m_odometry = new DifferentialDriveOdometry(
+  new Rotation2d(m_gyro.getGyroAngleZ()*180.0/Math.PI),
+  getDistance(lEncoder), getDistance(rEncoder),
+  new Pose2d(5.0, 13.5, new Rotation2d()));
   }
 
+  private double getDistance(RelativeEncoder encoder) {
+    return (encoder.getPosition()*Math.PI*2*frc.robot.Constants.wheelRadius/frc.robot.Constants.driveTrainGearRatio);
+  }
   public void resetEncoders()
   {
     lEncoder.setPosition(0);
@@ -140,10 +158,23 @@ public class DriveTrain extends SubsystemBase {
     // System.out.println("doDrive called!");
     doDrive(lThrottle, rThrottle, false);
   }
- 
+
+  public Pose2d getPose() {
+    return m_pose; 
+  }
+
+  public void resetPose(Pose2d newPose2d) {
+    m_odometry.resetPosition(new Rotation2d(m_gyro.getGyroAngleZ()*180.0/Math.PI), new DifferentialDriveWheelPositions(getDistance(lEncoder), getDistance(rEncoder)), newPose2d);
+  }
   @Override
   public void periodic() {
-    
+    // Get the rotation of the robot from the gyro.
+    var gyroAngle = new Rotation2d(m_gyro.getGyroAngleZ()*180.0/Math.PI);
+
+    // Update the pose
+    m_pose = m_odometry.update(gyroAngle,
+    getDistance(lEncoder),
+    getDistance(rEncoder));
 
   }
 
