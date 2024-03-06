@@ -5,12 +5,10 @@
 package frc.robot;
 
 
-import java.util.Optional;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
@@ -103,18 +101,18 @@ public class RobotContainer {
     // turnToSouth.whenPressed(TurnToSouth);
     // turnToWest.whenPressed(TurnToWest);
     
-    // toggleBL.onTrue(new RunCommand(() -> {
-    //   m_dDriveTrain.setBL();
-    // }));
-    // toggleBR.onTrue(new RunCommand(() -> {
-    //   m_dDriveTrain.setBR();
-    // }));
-    // toggleFL.onTrue(new RunCommand(() -> {
-    //   m_dDriveTrain.setFL();
-    // }));
-    // toggleFR.onTrue(new RunCommand(() -> {
-    //   m_dDriveTrain.setFR();
-    // }));
+    toggleBL.onTrue(new RunCommand(() -> {
+      m_dDriveTrain.setBL();
+    }, m_dDriveTrain));
+    toggleBR.onTrue(new RunCommand(() -> {
+      m_dDriveTrain.setBR();
+    }, m_dDriveTrain));
+    toggleFL.onTrue(new RunCommand(() -> {
+      m_dDriveTrain.setFL();
+    }, m_dDriveTrain));
+    toggleFR.onTrue(new RunCommand(() -> {
+      m_dDriveTrain.setFR();
+    }, m_dDriveTrain));
 
     upAccel.onTrue(new InstantCommand(() -> {
       m_dDriveTrain.upFactor();
