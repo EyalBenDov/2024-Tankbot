@@ -6,6 +6,7 @@ package frc.robot;
 
 
 
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
@@ -55,11 +56,12 @@ public class RobotContainer {
     // DriverStation.Alliance alliance = DriverStation.getAlliance();
     m_alliance = DriverStation.getAlliance().get();
     m_pneumatics.forwardLiftSolenoid();
+
     // Configure the button bindings
     configureButtonBindings();
 
     // CameraServer.startAutomaticCapture();
-    if (m_alliance == DriverStation.Alliance.Blue) {
+    if (m_alliance == DriverStation.Alliance.Red) {
       m_dDriveTrain.setDefaultCommand(
 
         new RunCommand(
@@ -77,8 +79,8 @@ public class RobotContainer {
         new RunCommand(
           () -> 
           m_dDriveTrain.doDrive(
-            -1*joystick1.getRawAxis(XboxController.Axis.kLeftY.value),
             -1*joystick1.getRawAxis(XboxController.Axis.kRightY.value),
+            -1*joystick1.getRawAxis(XboxController.Axis.kLeftY.value),
             true
             ),
         m_dDriveTrain)
@@ -96,23 +98,24 @@ public class RobotContainer {
   
     liftSolenoid.onTrue(new InstantCommand(() -> m_pneumatics.toggleLiftSolenoid()));
     liftSolenoid.onFalse(new InstantCommand(() -> m_pneumatics.toggleLiftSolenoid()));
+
     // turnToNorth.whenPressed(TurnToNorth);
     // turnToEast.whenPressed(TurnToEast);
     // turnToSouth.whenPressed(TurnToSouth);
     // turnToWest.whenPressed(TurnToWest);
     
-    // toggleBL.onTrue(new RunCommand(() -> {
-    //   m_dDriveTrain.setBL();
-    // }, m_dDriveTrain));
-    // toggleBR.onTrue(new RunCommand(() -> {
-    //   m_dDriveTrain.setBR();
-    // }, m_dDriveTrain));
-    // toggleFL.onTrue(new RunCommand(() -> {
-    //   m_dDriveTrain.setFL();
-    // }, m_dDriveTrain));
-    // toggleFR.onTrue(new RunCommand(() -> {
-    //   m_dDriveTrain.setFR();
-    // }, m_dDriveTrain));
+    toggleBL.onTrue(new RunCommand(() -> {
+      m_dDriveTrain.setBL();
+    }, m_dDriveTrain));
+    toggleBR.onTrue(new RunCommand(() -> {
+      m_dDriveTrain.setBR();
+    }, m_dDriveTrain));
+    toggleFL.onTrue(new RunCommand(() -> {
+      m_dDriveTrain.setFL();
+    }, m_dDriveTrain));
+    toggleFR.onTrue(new RunCommand(() -> {
+      m_dDriveTrain.setFR();
+    }, m_dDriveTrain));
 
     upAccel.onTrue(new InstantCommand(() -> {
       m_dDriveTrain.upFactor();
@@ -120,6 +123,7 @@ public class RobotContainer {
     downAccel.onTrue(new InstantCommand(() -> {
       m_dDriveTrain.downFactor();
     }));
+
 
   }
   
@@ -133,6 +137,8 @@ public class RobotContainer {
     // return new AutonomousCommandGroup(m_dDriveTrain);
     // System.out.println("Auto called!");
 
-    return new MoveTime(m_dDriveTrain);
+    // return new MoveTime(m_dDriveTrain);
+    return new RunCommand(() -> m_dDriveTrain.drive(5, 5), m_dDriveTrain);
+
   }
 }

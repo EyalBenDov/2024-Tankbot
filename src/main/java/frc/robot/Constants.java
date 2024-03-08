@@ -25,6 +25,13 @@ public final class Constants {
     public static double EncoderPIDKI = 0.05;
     public static double EncoderPIDKD = 0;
 
-    public static double driveTrainGearRatio = 12.75;
-    public static double wheelRadius = 4.0;
+    public static double driveTrainGearRatio = 6;
+    public static double wheelRadius = 0.1016;
+
+    public static double velocityPIDkP = 0.005;
+    public static double velocityPIDkI = 0;
+    public static double velocityPIDkD = 0;
+
+    public static double trackWidth = 0.5842;
+    public static double maxWheelSpeed = 5;
 }
