@@ -13,11 +13,13 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.MoveTime;
 import frc.robot.subsystems.DriveTrain;
 import frc.robot.subsystems.Pneumatics;
+import frc.robot.commands.MoveDistance;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -30,7 +32,7 @@ public class RobotContainer {
   private final DriveTrain m_dDriveTrain = new DriveTrain();
   // private final Joystick joystick1 = new Joystick(0);
   private final CommandJoystick joystick1 = new CommandJoystick(0);
-
+  private final Trigger spatulaSolenoid = joystick1.button(5);
   private final Trigger liftSolenoid = joystick1.button(6);
   private final Pneumatics m_pneumatics = new Pneumatics();
 
@@ -55,7 +57,8 @@ public class RobotContainer {
   public RobotContainer() {
     // DriverStation.Alliance alliance = DriverStation.getAlliance();
     m_alliance = DriverStation.getAlliance().get();
-    m_pneumatics.forwardLiftSolenoid();
+    m_pneumatics.reverseLiftSolenoid();
+    m_pneumatics.forwardSpatulaSolenoid();
 
     // Configure the button bindings
     configureButtonBindings();
@@ -98,31 +101,33 @@ public class RobotContainer {
   
     liftSolenoid.onTrue(new InstantCommand(() -> m_pneumatics.toggleLiftSolenoid()));
     liftSolenoid.onFalse(new InstantCommand(() -> m_pneumatics.toggleLiftSolenoid()));
-
+    
+    spatulaSolenoid.onTrue(new InstantCommand(() -> m_pneumatics.toggleSpatulaSolenoid()));
+    spatulaSolenoid.onFalse(new InstantCommand(() -> m_pneumatics.toggleSpatulaSolenoid()));
     // turnToNorth.whenPressed(TurnToNorth);
     // turnToEast.whenPressed(TurnToEast);
     // turnToSouth.whenPressed(TurnToSouth);
     // turnToWest.whenPressed(TurnToWest);
     
-    toggleBL.onTrue(new RunCommand(() -> {
-      m_dDriveTrain.setBL();
-    }, m_dDriveTrain));
-    toggleBR.onTrue(new RunCommand(() -> {
-      m_dDriveTrain.setBR();
-    }, m_dDriveTrain));
-    toggleFL.onTrue(new RunCommand(() -> {
-      m_dDriveTrain.setFL();
-    }, m_dDriveTrain));
-    toggleFR.onTrue(new RunCommand(() -> {
-      m_dDriveTrain.setFR();
-    }, m_dDriveTrain));
+    // toggleBL.onTrue(new RunCommand(() -> {
+    //   m_dDriveTrain.setBL();
+    // }, m_dDriveTrain));
+    // toggleBR.onTrue(new RunCommand(() -> {
+    //   m_dDriveTrain.setBR();
+    // }, m_dDriveTrain));
+    // toggleFL.onTrue(new RunCommand(() -> {
+    //   m_dDriveTrain.setFL();
+    // }, m_dDriveTrain));
+    // toggleFR.onTrue(new RunCommand(() -> {
+    //   m_dDriveTrain.setFR();
+    // }, m_dDriveTrain));
 
-    upAccel.onTrue(new InstantCommand(() -> {
-      m_dDriveTrain.upFactor();
-    }));
-    downAccel.onTrue(new InstantCommand(() -> {
-      m_dDriveTrain.downFactor();
-    }));
+    // upAccel.onTrue(new InstantCommand(() -> {
+    //   m_dDriveTrain.upFactor();
+    // }));
+    // downAccel.onTrue(new InstantCommand(() -> {
+    //   m_dDriveTrain.downFactor();
+    // }));
 
 
   }
@@ -138,7 +143,11 @@ public class RobotContainer {
     // System.out.println("Auto called!");
 
     // return new MoveTime(m_dDriveTrain);
-    return new RunCommand(() -> m_dDriveTrain.drive(5, 5), m_dDriveTrain);
+    // return new RunCommand(() -> m_dDriveTrain.drive(1, 1), m_dDriveTrain);
+
+    // return new MoveDistance(m_dDriveTrain, 1, 1);
+
+    return new SequentialCommandGroup(new MoveDistance(m_dDriveTrain, 1, 1), new InstantCommand(() -> m_pneumatics.reverseSpatulaSolenoid()));
 
   }
 }

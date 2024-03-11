@@ -28,10 +28,14 @@ public final class Constants {
     public static double driveTrainGearRatio = 6;
     public static double wheelRadius = 0.1016;
 
-    public static double velocityPIDkP = 0.005;
+    public static double velocityPIDkP = 0.9;
     public static double velocityPIDkI = 0;
     public static double velocityPIDkD = 0;
 
     public static double trackWidth = 0.5842;
     public static double maxWheelSpeed = 5;
+
+    public static double FFkS = 0;
+    public static double FFkV = 0;
+    public static double FFkA = 0;
 }

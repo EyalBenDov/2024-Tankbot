@@ -9,6 +9,7 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -16,7 +17,6 @@ import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelPositions;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
-import edu.wpi.first.math.proto.Kinematics;
 import edu.wpi.first.wpilibj.ADIS16448_IMU;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
@@ -28,7 +28,7 @@ public class DriveTrain extends SubsystemBase {
   // private Victor BL = new Victor(3);
   // private Victor FR = new Victor(2);
   // private Victor BR = new Victor(1);
-  PIDController velocityPIDController = new PIDController(Constants.velocityPIDkP, Constants.velocityPIDkI, Constants.velocityPIDkD);
+  PIDController distancePIDController = new PIDController(Constants.velocityPIDkP, Constants.velocityPIDkI, Constants.velocityPIDkD);
 
   private CANSparkMax FL = new CANSparkMax(4, MotorType.kBrushless);
   private CANSparkMax BL = new CANSparkMax(3, MotorType.kBrushless);
@@ -49,6 +49,8 @@ public class DriveTrain extends SubsystemBase {
   DifferentialDriveOdometry m_odometry;
   private Pose2d m_pose;
   private DifferentialDriveKinematics m_kinematics = new DifferentialDriveKinematics(Constants.trackWidth);
+  SimpleMotorFeedforward m_feedforward = new SimpleMotorFeedforward(Constants.FFkS, Constants.FFkV, Constants.FFkA);
+
   /** Creates a new DriveTrain. */
   public DriveTrain() {
     FL.setInverted(true);
@@ -73,6 +75,23 @@ public class DriveTrain extends SubsystemBase {
   private double getVelocity(RelativeEncoder encoder) {
     return (encoder.getVelocity()*Math.PI*2*frc.robot.Constants.wheelRadius/frc.robot.Constants.driveTrainGearRatio);
   }
+
+  public double getLDistance() {
+    return getDistance(lEncoder);
+  }
+  public double getRDistance() {
+    return getDistance(rEncoder);
+  }
+
+  public void stopMotors() {
+    FL.set(0);
+    BL.set(0);
+    FR.set(0);
+    BR.set(0);
+  }
+
+
+
   public void resetEncoders()
   {
     lEncoder.setPosition(0);
@@ -126,34 +145,13 @@ public class DriveTrain extends SubsystemBase {
     }
   }
 
-  public void drive(double lV, double rV) {
-    // var currentLV = lEncoder.getVelocity()*Math.PI*2*Constants.wheelRadius/Constants.driveTrainGearRatio/60;
-    // var currentRV = rEncoder.getVelocity()*Math.PI*2*Constants.wheelRadius/Constants.driveTrainGearRatio/60;
-    var currentLV = lEncoder.getVelocity()/60;
-    var currentRV = rEncoder.getVelocity()/60;
-    
-    var lVError = lV-currentLV;
-    var rVError = rV-currentRV;
-
-    // var lVError = lV-getDistance(lEncoder);
-    // var rVError = rV-getDistance(rEncoder);
-
-    var rEffort = rVError*Constants.velocityPIDkP;
-    var lEffort = lVError*Constants.velocityPIDkP;
-
-    FL.set(velocityPIDController.calculate(currentLV, lV));
-    BL.set(velocityPIDController.calculate(currentLV, lV));
-    FR.set(velocityPIDController.calculate(currentRV, rV));
-    BR.set(velocityPIDController.calculate(currentRV, rV));
-
-    // FL.set(velocityPIDController.calculate(getDistance(lEncoder), lV));
-    // BL.set(velocityPIDController.calculate(getDistance(lEncoder), lV));
-    // FR.set(velocityPIDController.calculate(getDistance(rEncoder), rV));
-    // BR.set(velocityPIDController.calculate(getDistance(rEncoder), rV));
-
-    System.out.println("right encoder: " + currentRV + " left encoder: " + currentLV);
-    // System.out.println("right error: " + rVError + " left error: " + lVError);
-    // System.out.println("DISTANCE: " + getDistance(rEncoder) + " " + getDistance(lEncoder));
+  public void drive(double l, double r) {
+    var lDistance = getDistance(lEncoder);
+    var rDistance = getDistance(rEncoder);
+    FL.set(distancePIDController.calculate(lDistance, l));
+    FR.set(distancePIDController.calculate(rDistance, r));
+    BL.set(distancePIDController.calculate(lDistance, l));
+    BR.set(distancePIDController.calculate(rDistance, r));
   }
 
   public void drive(ChassisSpeeds speeds) {

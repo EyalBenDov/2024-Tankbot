@@ -4,97 +4,48 @@
 
 package frc.robot.commands;
 
-import frc.robot.Constants;
 import frc.robot.subsystems.DriveTrain;
-import utilities.IMUWrapper;
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import java.lang.Math;
 
 /** An example command that uses an example subsystem. */
 public class MoveDistance extends Command {
   @SuppressWarnings({"PMD.UnusedPrivateField", "PMD.SingularField"})
-  private final DriveTrain m_DriveTrain;
-  
-  PIDController drivingPID = new PIDController(Constants.EncoderPIDKP, Constants.EncoderPIDKI, Constants.EncoderPIDKD);
-  PIDController gyroZPID = new PIDController(Constants.GyroZKP, Constants.GyroZKI, Constants.GyroZKD);
-  //position variables are measured in encoder ticks
-  private double currentPosition;
-  private double targetPosition;
-  private double leftThrottle;
-  private double rightThrottle;
-  private double wheelRadius = 3.5;
-  private double zAngle;
-
+  private final DriveTrain m_subsystem;
+  private final double m_l;
+  private final double m_r;
   /**
    * Creates a new ExampleCommand.
    *
    * @param subsystem The subsystem used by this command.
    */
-  public MoveDistance(DriveTrain train, double togo) {
-    m_DriveTrain = train;
-
-    targetPosition = togo / (2*wheelRadius * Math.PI);
-    
+  public MoveDistance(DriveTrain subsystem, double l, double r) {
+    m_subsystem = subsystem;
+    m_l = l;
+    m_r = r;
     // Use addRequirements() here to declare subsystem dependencies.
-    addRequirements(m_DriveTrain);
+    addRequirements(subsystem);
   }
 
   // Called when the command is initially scheduled.
   @Override
-  public void initialize()
-  {
-    drivingPID.reset();
-    drivingPID.setSetpoint(targetPosition);
-    gyroZPID.reset();
-    gyroZPID.setSetpoint(0);
-    m_DriveTrain.resetEncoders();
-  }
+  public void initialize() {}
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
-  public void execute()
-  {
-    currentPosition = m_DriveTrain.getPosition();
-    zAngle = IMUWrapper.getZAngle();
-    SmartDashboard.putNumber("Z angle", zAngle);
-    double pidOutputZ = -gyroZPID.calculate(zAngle);
-    double clampedPIDOutputZ = MathUtil.clamp(pidOutputZ, -.5, .5);
-    goDistance(targetPosition, currentPosition, clampedPIDOutputZ);
+  public void execute() {
+    m_subsystem.drive(m_l, m_r);
+    System.out.println(m_subsystem.getLDistance() + " " + m_subsystem.getRDistance());
   }
+
   // Called once the command ends or is interrupted.
   @Override
-  public void end(boolean interrupted) {}
+  public void end(boolean interrupted) {
+    m_subsystem.stopMotors();
+  }
 
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return currentPosition > targetPosition;
-  }
-
-  public void goDistance(double targetPosition, double currentPosition, double zPIDOutput)
-  {
-    if(targetPosition >= currentPosition)
-    {
-      double motorOutput = MathUtil.clamp(drivingPID.calculate(currentPosition), -1, 1);
-      leftThrottle = motorOutput;
-      rightThrottle = motorOutput;
-      System.out.println("current position:" + currentPosition + "target position:" + targetPosition);
-      SmartDashboard.putNumber("Current position", currentPosition);
-      SmartDashboard.putNumber("Target position", targetPosition);
-      SmartDashboard.putNumber("PID Output", motorOutput);
-      System.out.println("pid output: " + motorOutput);
-      if (zPIDOutput > 0) {
-        rightThrottle *= (1 - Math.abs(zPIDOutput));
-      }
-      else {
-        leftThrottle *= (1 - Math.abs(zPIDOutput));
-      }
-      SmartDashboard.putNumber("Left Throttle", leftThrottle);
-      SmartDashboard.putNumber("Right Throttle", rightThrottle);
-      m_DriveTrain.doDrive(leftThrottle, rightThrottle);
-    }
+    return m_subsystem.getLDistance() >= m_l && m_subsystem.getRDistance() >= m_r;
   }
 }

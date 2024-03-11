@@ -17,20 +17,19 @@ import java.lang.Math;
 public class MoveTime extends Command {
   @SuppressWarnings({"PMD.UnusedPrivateField", "PMD.SingularField"})
   private final DriveTrain m_DriveTrain;
+  private final double t;
   
   
   //position variables are measured in encoder ticks
-  private double leftThrottle;
-  private double rightThrottle;
-
   double startTime;
   /**
    * Creates a new ExampleCommand.
    *
    * @param subsystem The subsystem used by this command.
    */
-  public MoveTime(DriveTrain train) {
+  public MoveTime(DriveTrain train, double timeToWait) {
     m_DriveTrain = train;
+    t = timeToWait;
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(m_DriveTrain);
   }
@@ -48,26 +47,18 @@ public class MoveTime extends Command {
   @Override
   public void execute()
   {
-    // m_DriveTrain.setBL();
-    // m_DriveTrain.setBR();
-    // m_DriveTrain.setFL();
-    // m_DriveTrain.setFR();
-    m_DriveTrain.doDrive(0.5, 0.5);
+
   }
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
     System.out.println("AUTO SHOULD BE FINISHED");
-    m_DriveTrain.setBL();
-    m_DriveTrain.setBR();
-    m_DriveTrain.setFL();
-    m_DriveTrain.setFR();
   }
 
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
     System.out.println(System.currentTimeMillis()-startTime);
-    return System.currentTimeMillis() - startTime >= 2000;
+    return System.currentTimeMillis() - startTime >= t;
   }
 }

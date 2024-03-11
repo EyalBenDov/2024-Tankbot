@@ -14,9 +14,12 @@ public class Pneumatics extends SubsystemBase {
   /** Creates a new ExampleSubsystem. */
   private final Compressor m_compressor;
   private final DoubleSolenoid liftSolenoid;
+  private final DoubleSolenoid spatulaSolenoid;
+
   public Pneumatics() {
     m_compressor = new Compressor(PneumaticsModuleType.CTREPCM);
     liftSolenoid= new DoubleSolenoid(PneumaticsModuleType.CTREPCM, 0, 1);
+    spatulaSolenoid= new DoubleSolenoid(PneumaticsModuleType.CTREPCM, 3, 2);
   }
   public void startCompressor() {
     m_compressor.enableDigital();
@@ -35,6 +38,18 @@ public class Pneumatics extends SubsystemBase {
     liftSolenoid.set(DoubleSolenoid.Value.kReverse);
   }
 
+  public void toggleSpatulaSolenoid() {
+    spatulaSolenoid.toggle();
+  }
+  public void disableSpatulaSolenoid() {
+    spatulaSolenoid.set(DoubleSolenoid.Value.kOff);
+  }
+  public void forwardSpatulaSolenoid() {
+    spatulaSolenoid.set(DoubleSolenoid.Value.kForward);
+  }
+  public void reverseSpatulaSolenoid() {
+    spatulaSolenoid.set(DoubleSolenoid.Value.kReverse);
+  }
 
 
 
