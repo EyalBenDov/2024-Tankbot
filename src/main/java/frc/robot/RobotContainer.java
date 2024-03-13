@@ -64,31 +64,17 @@ public class RobotContainer {
     configureButtonBindings();
 
     // CameraServer.startAutomaticCapture();
-    if (m_alliance == DriverStation.Alliance.Red) {
-      m_dDriveTrain.setDefaultCommand(
+          m_dDriveTrain.setDefaultCommand(
 
         new RunCommand(
           () -> 
           m_dDriveTrain.doDrive(
-            joystick1.getRawAxis(XboxController.Axis.kLeftY.value),
             joystick1.getRawAxis(XboxController.Axis.kRightY.value),
+            joystick1.getRawAxis(XboxController.Axis.kLeftY.value),
             true
             ),
         m_dDriveTrain)
       );
-    } else {
-      m_dDriveTrain.setDefaultCommand(
-
-        new RunCommand(
-          () -> 
-          m_dDriveTrain.doDrive(
-            -1*joystick1.getRawAxis(XboxController.Axis.kRightY.value),
-            -1*joystick1.getRawAxis(XboxController.Axis.kLeftY.value),
-            true
-            ),
-        m_dDriveTrain)
-      );
-    }
   }
 
   /**

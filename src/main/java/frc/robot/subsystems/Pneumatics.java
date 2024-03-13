@@ -19,7 +19,7 @@ public class Pneumatics extends SubsystemBase {
   public Pneumatics() {
     m_compressor = new Compressor(PneumaticsModuleType.CTREPCM);
     liftSolenoid= new DoubleSolenoid(PneumaticsModuleType.CTREPCM, 0, 1);
-    spatulaSolenoid= new DoubleSolenoid(PneumaticsModuleType.CTREPCM, 3, 2);
+    spatulaSolenoid= new DoubleSolenoid(PneumaticsModuleType.CTREPCM, 2, 3);
   }
   public void startCompressor() {
     m_compressor.enableDigital();
