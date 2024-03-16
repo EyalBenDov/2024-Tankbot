@@ -47,12 +47,13 @@ public class MoveTime extends Command {
   @Override
   public void execute()
   {
-
+    m_DriveTrain.setMotors();
   }
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
     System.out.println("AUTO SHOULD BE FINISHED");
+    m_DriveTrain.stopMotors();
   }
 
   // Returns true when the command should end.

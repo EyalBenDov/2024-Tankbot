@@ -20,6 +20,7 @@ import frc.robot.commands.MoveTime;
 import frc.robot.subsystems.DriveTrain;
 import frc.robot.subsystems.Pneumatics;
 import frc.robot.commands.MoveDistance;
+import frc.robot.commands.OscilateSpatula;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -46,19 +47,21 @@ public class RobotContainer {
   private Trigger upAccel = joystick1.button(8);
   private Trigger downAccel = joystick1.button(7);
 
-  private Trigger toggleFL = joystick1.button(1);
-  private Trigger toggleBL = joystick1.button(2);
-  private Trigger toggleFR = joystick1.button(3);
-  private Trigger toggleBR = joystick1.button(4);
+  // private Trigger toggleFL = joystick1.button(1);
+  // private Trigger toggleBL = joystick1.button(2);
+  // private Trigger toggleFR = joystick1.button(3);
+  // private Trigger toggleBR = joystick1.button(4);
+
+  private Trigger oscilateSpatula = joystick1.button(2);
 
   DriverStation.Alliance m_alliance;
   
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     // DriverStation.Alliance alliance = DriverStation.getAlliance();
-    m_alliance = DriverStation.getAlliance().get();
+    
     m_pneumatics.reverseLiftSolenoid();
-    m_pneumatics.forwardSpatulaSolenoid();
+    m_pneumatics.reverseSpatulaSolenoid();
 
     // Configure the button bindings
     configureButtonBindings();
@@ -90,6 +93,9 @@ public class RobotContainer {
     
     spatulaSolenoid.onTrue(new InstantCommand(() -> m_pneumatics.toggleSpatulaSolenoid()));
     spatulaSolenoid.onFalse(new InstantCommand(() -> m_pneumatics.toggleSpatulaSolenoid()));
+
+    // oscilateSpatula.onTrue(new OscilateSpatula(m_pneumatics, 100));
+    
     // turnToNorth.whenPressed(TurnToNorth);
     // turnToEast.whenPressed(TurnToEast);
     // turnToSouth.whenPressed(TurnToSouth);
@@ -132,8 +138,9 @@ public class RobotContainer {
     // return new RunCommand(() -> m_dDriveTrain.drive(1, 1), m_dDriveTrain);
 
     // return new MoveDistance(m_dDriveTrain, 1, 1);
+    // return new InstantCommand();
+    return new SequentialCommandGroup(new MoveTime(m_dDriveTrain, 600), new InstantCommand(() -> m_pneumatics.reverseSpatulaSolenoid()), new MoveTime(m_dDriveTrain, 1000));
 
-    return new SequentialCommandGroup(new MoveDistance(m_dDriveTrain, 1, 1), new InstantCommand(() -> m_pneumatics.reverseSpatulaSolenoid()));
 
   }
 }

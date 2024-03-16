@@ -7,6 +7,7 @@ package frc.robot.subsystems;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.CANSparkBase.IdleMode;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
@@ -18,6 +19,7 @@ import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelPositions;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.wpilibj.ADIS16448_IMU;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -36,14 +38,15 @@ public class DriveTrain extends SubsystemBase {
   private CANSparkMax FR = new CANSparkMax(2, MotorType.kBrushless);
   private CANSparkMax BR = new CANSparkMax(1, MotorType.kBrushless);
 
-  private RelativeEncoder lEncoder = FL.getEncoder();
-  private RelativeEncoder rEncoder = BR.getEncoder();
+  private RelativeEncoder lEncoder;
+  private RelativeEncoder rEncoder;
 
   private MotorControllerGroup m_left = new MotorControllerGroup(FL, BL);
   private MotorControllerGroup m_right = new MotorControllerGroup(FR, BR);
   private DifferentialDrive m_drive = new DifferentialDrive(m_left, m_right);
   private int accelFactor = 0;
   private double accelVal = 0.05;
+  public DriverStation.Alliance alliance;
 
   private final ADIS16448_IMU m_gyro;
   DifferentialDriveOdometry m_odometry;
@@ -53,8 +56,12 @@ public class DriveTrain extends SubsystemBase {
 
   /** Creates a new DriveTrain. */
   public DriveTrain() {
-    FL.setInverted(true);
-    BL.setInverted(true);
+  alliance = DriverStation.getAlliance().get();      
+    
+  // FL.setInverted(true);
+  // BL.setInverted(true);
+  lEncoder = FL.getEncoder();
+  rEncoder = BR.getEncoder();
     m_pose = new Pose2d();
     m_gyro = new ADIS16448_IMU();
     resetEncoders();
@@ -88,6 +95,16 @@ public class DriveTrain extends SubsystemBase {
     BL.set(0);
     FR.set(0);
     BR.set(0);
+
+    FL.setIdleMode(IdleMode.kCoast);
+    BL.setIdleMode(IdleMode.kCoast);
+    FR.setIdleMode(IdleMode.kCoast);
+    BR.setIdleMode(IdleMode.kCoast);
+
+    FL.burnFlash();
+    BL.burnFlash();
+    FR.burnFlash();
+    BR.burnFlash();
   }
 
 
@@ -133,6 +150,29 @@ public class DriveTrain extends SubsystemBase {
     }
     else {
       BL.set(-0.3);
+    }
+  }
+  public void setMotors() {
+    FL.setIdleMode(IdleMode.kBrake);
+    BL.setIdleMode(IdleMode.kBrake);
+    FR.setIdleMode(IdleMode.kBrake);
+    BR.setIdleMode(IdleMode.kBrake);
+
+    FL.burnFlash();
+    BL.burnFlash();
+    FR.burnFlash();
+    BR.burnFlash();
+
+    if (alliance == DriverStation.Alliance.Red) {
+      FL.set(0.3);
+      BL.set(0.3);
+      BR.set(-0.3);
+      FR.set(-0.3);
+    } else {
+      FL.set(-0.3);
+      BL.set(-0.3);
+      BR.set(0.3);
+      FR.set(0.3);
     }
   }
   public void setBR() {
@@ -194,13 +234,16 @@ public class DriveTrain extends SubsystemBase {
         if (lneg) { lThrottle *= -1; }
         if (rneg) { rThrottle *= -1; }
       }
-
-      m_drive.tankDrive(lThrottle, rThrottle);
+      if (alliance == DriverStation.Alliance.Red) {
+        m_drive.tankDrive(-lThrottle, rThrottle);
+      } else {
+        m_drive.tankDrive(rThrottle, -lThrottle);
+      }
       // System.out.println("Positions: " + lEncoder.getPosition()+ ", " + -rEncoder.getPosition());
       // System.out.println(String.format("I am tank driving with a lThrottle of %s and a rThrottle of %s", lThrottle, rThrottle));
   }
-
   public void doDrive(double lThrottle, double rThrottle) {
+
     // System.out.println("doDrive called!");
     doDrive(lThrottle, rThrottle, false);
   }
